@@ -29,4 +29,15 @@ public class FirstService : FirstServiceDefinition.FirstServiceDefinitionBase
             await responseStream.WriteAsync(response);
         }
     }
+
+    public override async Task BiDirectionalStream(IAsyncStreamReader<Request> requestStream, IServerStreamWriter<Response> responseStream, ServerCallContext context)
+    {
+        Response response = new Response() { Message = "" };
+        while(await requestStream.MoveNext())
+        {
+            var requestPayload = requestStream.Current;
+            response.Message = requestPayload.ToString();
+            await responseStream.WriteAsync(response);
+        }
+    }
 }
