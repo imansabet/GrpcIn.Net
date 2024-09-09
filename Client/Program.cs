@@ -38,12 +38,26 @@ async void ClientStreaming(FirstServiceDefinition.FirstServiceDefinitionClient c
 }
 async void ServerStreaming(FirstServiceDefinition.FirstServiceDefinitionClient client)
 {
-    using var StreamingCall = client.ServerStream(new Request() { Content = "Hello!"  });
-
-    await foreach (var response in StreamingCall.ResponseStream.ReadAllAsync())
+    try
     {
-        Console.WriteLine(response.Message);
+        var cancellationToken = new CancellationTokenSource();
+        
+        using var StreamingCall = client.ServerStream(new Request() { Content = "Hello!" });
+
+        await foreach (var response in StreamingCall.ResponseStream.ReadAllAsync(cancellationToken.Token))
+        {
+            Console.WriteLine(response.Message);
+            if (response.Message.Contains("2"))
+            {
+                cancellationToken.Cancel();
+            }
+        }
     }
+    catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
+    {
+
+    }
+   
 
 }
 async void BiDirectionalStreaming(FirstServiceDefinition.FirstServiceDefinitionClient client)
