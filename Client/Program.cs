@@ -22,7 +22,7 @@ Console.ReadLine();
 void Unary(FirstServiceDefinition.FirstServiceDefinitionClient client)
 {
     var request = new Request() { Content = "Hello you !" };
-    var response = client.Unary(request);
+    var response = client.Unary(request,deadline:DateTime.UtcNow.AddMilliseconds(3));
 }
 async void ClientStreaming(FirstServiceDefinition.FirstServiceDefinitionClient client)
 {
