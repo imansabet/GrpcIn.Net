@@ -13,9 +13,8 @@ using var channel = GrpcChannel.ForAddress("https://localhost:7135" , option);
 var client = new FirstServiceDefinition.FirstServiceDefinitionClient(channel);
 //Unary(client);
 //ClientStreaming(client);
-ServerStreaming(client);
-
-
+//ServerStreaming(client);
+BiDirectionalStreaming(client);
 
 Console.ReadLine();
 
@@ -46,4 +45,23 @@ async void ServerStreaming(FirstServiceDefinition.FirstServiceDefinitionClient c
         Console.WriteLine(response.Message);
     }
 
+}
+async void BiDirectionalStreaming(FirstServiceDefinition.FirstServiceDefinitionClient client)
+{
+    using (var call = client.BiDirectionalStream())
+    {
+        var request = new Request();
+        for (var i = 0; i < 10; i++)
+        {
+            request.Content = i.ToString();
+            Console.WriteLine(request.Content);
+            await call.RequestStream.WriteAsync(request);
+        }
+        while(await call.ResponseStream.MoveNext())
+        {
+            var message = call.ResponseStream.Current;
+            Console.WriteLine(message);
+        }
+        await call.RequestStream.CompleteAsync();
+    }
 }
