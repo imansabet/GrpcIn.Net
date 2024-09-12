@@ -1,14 +1,16 @@
 using Basics;
+using MVCClient.Interceptors;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddTransient<ClientLoggerInterceptor>();
 builder.Services.AddGrpcClient<FirstServiceDefinition.FirstServiceDefinitionClient>(
     options =>
     {
-        options.Address = new Uri("https://localhost:7135"); 
-    });
+        options.Address = new Uri("https://localhost:7135");
+    }).AddInterceptor<ClientLoggerInterceptor>();
 
 
 

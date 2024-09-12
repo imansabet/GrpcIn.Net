@@ -39,15 +39,15 @@ async void ClientStreaming(FirstServiceDefinition.FirstServiceDefinitionClient c
 }
 async void ServerStreaming(FirstServiceDefinition.FirstServiceDefinitionClient client)
 {
-    try
-    {
         var cancellationToken = new CancellationTokenSource();
 
         var metadata = new Metadata();
-        metadata.Add(new Entry("first-key", "first-value"));
-        metadata.Add(new Entry("second-key", "second-value"));
+        //metadata.Add(new Entry("first-key", "first-value"));
+        //metadata.Add(new Entry("second-key", "second-value"));
         
 
+    try
+    {
         using var streamingCall = client.ServerStream(new Request()
         { Content = "Hello!" }
           ,headers: metadata
@@ -61,10 +61,8 @@ async void ServerStreaming(FirstServiceDefinition.FirstServiceDefinitionClient c
                 cancellationToken.Cancel();
             }
         }
-        var myTrailers = streamingCall.GetTrailers();
-        var myValue = myTrailers.GetValue("a-trailer"); 
-
-
+        //var myTrailers = streamingCall.GetTrailers();
+        //var myValue = myTrailers.GetValue("a-trailer"); 
     }
     catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
     {
