@@ -48,12 +48,12 @@ async void ServerStreaming(FirstServiceDefinition.FirstServiceDefinitionClient c
         metadata.Add(new Entry("second-key", "second-value"));
         
 
-        using var StreamingCall = client.ServerStream(new Request()
+        using var streamingCall = client.ServerStream(new Request()
         { Content = "Hello!" }
           ,headers: metadata
         );
 
-        await foreach (var response in StreamingCall.ResponseStream.ReadAllAsync(cancellationToken.Token))
+        await foreach (var response in streamingCall.ResponseStream.ReadAllAsync(cancellationToken.Token))
         {
             Console.WriteLine(response.Message);
             if (response.Message.Contains("2"))
@@ -61,6 +61,10 @@ async void ServerStreaming(FirstServiceDefinition.FirstServiceDefinitionClient c
                 cancellationToken.Cancel();
             }
         }
+        var myTrailers = streamingCall.GetTrailers();
+        var myValue = myTrailers.GetValue("a-trailer"); 
+
+
     }
     catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
     {

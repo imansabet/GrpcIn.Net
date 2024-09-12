@@ -24,6 +24,11 @@ public class FirstService : FirstServiceDefinition.FirstServiceDefinitionBase
     public override async Task ServerStream(Request request, IServerStreamWriter<Response> responseStream, ServerCallContext context)
     {
         var headerFirst = context.RequestHeaders.Get("first-key");
+
+        var myTrailer = new Metadata.Entry("a-trailer", "a-trailer-value");
+        context.ResponseTrailers.Add(myTrailer);
+
+
         for(var i= 0;i< 100; i++)
         {
             if (context.CancellationToken.IsCancellationRequested) return; 
