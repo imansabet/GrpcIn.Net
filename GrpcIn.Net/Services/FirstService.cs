@@ -7,8 +7,8 @@ public class FirstService : FirstServiceDefinition.FirstServiceDefinitionBase
 {
     public override Task<Response> Unary(Request request, ServerCallContext context)
     {
-        context.WriteOptions = new WriteOptions(WriteFlags.NoCompress)
-        var response = new Response() { Message = request.Content + "from Server " };
+        context.WriteOptions = new WriteOptions(WriteFlags.NoCompress);
+        var response = new Response() { Message = request.Content + $"from Server{context.Host} " };
         return Task.FromResult(response);
     }
     public override async Task<Response> ClientStream(IAsyncStreamReader<Request> requestStream, ServerCallContext context)

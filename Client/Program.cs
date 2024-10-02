@@ -2,14 +2,36 @@
 using Basics;
 using Grpc.Core;
 using Grpc.Net.Client;
+using Grpc.Net.Client.Balancer;
+using Grpc.Net.Client.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using static Grpc.Core.Metadata;
 
 
+var factory = new StaticResolverFactory(addr => new[]
+{
+    new BalancerAddress("localhost",5057),
+    new BalancerAddress("localhost",5058)
+});
+
+var services = new ServiceCollection();
+services.AddSingleton<ResolverFactory>(factory);
+
+var channel = GrpcChannel.ForAddress("static://localhost", new GrpcChannelOptions()
+{
+    Credentials = ChannelCredentials.Insecure,
+    ServiceConfig = new ServiceConfig
+    {
+        LoadBalancingConfigs = { new RoundRobinConfig() }
+    },
+    ServiceProvider = services.BuildServiceProvider()
+});
+
+
+
 
 var option = new GrpcChannelOptions() { };
-
-using var channel = GrpcChannel.ForAddress("https://localhost:7135" , option);
 
 var client = new FirstServiceDefinition.FirstServiceDefinitionClient(channel);
 
