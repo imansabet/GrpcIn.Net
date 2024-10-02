@@ -8,32 +8,46 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using static Grpc.Core.Metadata;
 
-
-var factory = new StaticResolverFactory(addr => new[]
+var retryPolicy = new MethodConfig
 {
-    new BalancerAddress("localhost",5057),
-    new BalancerAddress("localhost",5058)
-});
+    Names = { MethodName.Default },
+    RetryPolicy = new RetryPolicy()
+    {
+        MaxAttempts = 5,
+        BackoffMultiplier =1,
+        InitialBackoff = TimeSpan.FromSeconds(0.5),
+        MaxBackoff = TimeSpan.FromSeconds(0.5),
+        RetryableStatusCodes = { StatusCode.Internal }
+    }
+};
+var hedging = new MethodConfig
+{
+    Names = { MethodName.Default },
+    HedgingPolicy = new HedgingPolicy()
+    {
+        MaxAttempts = 5,
+        NonFatalStatusCodes = { StatusCode.Internal },
+        HedgingDelay = TimeSpan.FromSeconds(0.5),
+    }
+};
+
+
+var options = new GrpcChannelOptions()
+{
+    ServiceConfig = new ServiceConfig()
+    {
+        MethodConfigs = { hedging }
+    }
+};
+using var channel = GrpcChannel.ForAddress("https://localhost:7135", options);
+var client = new FirstServiceDefinition.FirstServiceDefinitionClient(channel);
+ServerStreaming(client);
 
 var services = new ServiceCollection();
-services.AddSingleton<ResolverFactory>(factory);
-
-var channel = GrpcChannel.ForAddress("static://localhost", new GrpcChannelOptions()
-{
-    Credentials = ChannelCredentials.Insecure,
-    ServiceConfig = new ServiceConfig
-    {
-        LoadBalancingConfigs = { new RoundRobinConfig() }
-    },
-    ServiceProvider = services.BuildServiceProvider()
-});
-
-
 
 
 var option = new GrpcChannelOptions() { };
 
-var client = new FirstServiceDefinition.FirstServiceDefinitionClient(channel);
 
 Unary(client);
 

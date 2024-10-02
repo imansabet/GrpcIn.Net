@@ -7,8 +7,11 @@ public class FirstService : FirstServiceDefinition.FirstServiceDefinitionBase
 {
     public override Task<Response> Unary(Request request, ServerCallContext context)
     {
-        context.WriteOptions = new WriteOptions(WriteFlags.NoCompress);
-        var response = new Response() { Message = request.Content + $"from Server{context.Host} " };
+        if(!context.RequestHeaders.Where(x => x.Key == "grpc-previous-rpc-attempts").Any())
+        {
+            throw new RpcException(new Status(StatusCode.Internal, "not here: try again"));
+        }
+        var response = new Response() { Message = request.Content + "from Server " };
         return Task.FromResult(response);
     }
     public override async Task<Response> ClientStream(IAsyncStreamReader<Request> requestStream, ServerCallContext context)
